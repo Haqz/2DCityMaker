@@ -38,6 +38,7 @@ ExportedObj/
 *.VC.db
 *.meta
 Assets/TextMesh Pro
+Assets/Scripts/sprites.json
 # Unity3D generated meta files
 *.pidb.meta
 *.pdb.meta
