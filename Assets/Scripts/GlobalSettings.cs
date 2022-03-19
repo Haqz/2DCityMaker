@@ -1,35 +1,34 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GlobalSettings : MonoBehaviour
 {
-        private static GlobalSettings _instance;
-        public static GlobalSettings instance
-        {
-                get { return _instance; }
-        }
+    public enum DrawingModes
+    {
+        Drawing = 0,
+        Selecting = 1,
+        Deleting = 2
+    }
 
-        public DrawingModes drawingMode = DrawingModes.Drawing;
-        public enum DrawingModes  {
-                Drawing =  0,
-                Selecting = 1,
-                Deleting = 2
-        };
-        private void Awake()
+    public Camera mainCamera;
+    public DrawingModes drawingMode = DrawingModes.Drawing;
+
+    public static GlobalSettings instance { get; private set; }
+
+    private void Awake()
+    {
+        if (instance == null)
         {
-                if (_instance == null)
-                {
-                        DontDestroyOnLoad(gameObject);
-                        _instance = this;
-                }
-                else
-                {
-                        Destroy(gameObject);
-                }
+            DontDestroyOnLoad(gameObject);
+            instance = this;
         }
-        
-        public static void changeMode(int mode)
+        else
         {
-                instance.drawingMode = (DrawingModes)mode;
-        }  
+            Destroy(gameObject);
+        }
+    }
+
+    public static void changeMode(int mode)
+    {
+        instance.drawingMode = (DrawingModes) mode;
+    }
 }

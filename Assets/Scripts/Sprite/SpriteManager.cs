@@ -5,56 +5,54 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 namespace Sprite
 {
     public class SpriteManager : MonoBehaviour
     {
         public JSONDef spriteJSON;
+        public Dropdown drop;
 
         private void Start()
         {
-            spriteJSON = SpriteManager.loadJson();
+            LoadJson();
         }
 
-        [Serializable]
-        public class JSONDef
+        public void LoadJson(string path = "./Assets/Scripts/sprites.json")
         {
-            public List<string> files;
-        }
-        static JSONDef loadJson(string path = "./Assets/Scripts/sprites.json")
-        {
-            string text = File.ReadAllText(path);
-            return JsonUtility.FromJson<JSONDef>(text);
+            var text = File.ReadAllText(path);
+            spriteJSON = JsonUtility.FromJson<JSONDef>(text);
+            foreach (var v in spriteJSON.files) drop.options.Add(new Dropdown.OptionData("New"));
         }
 
-        public void saveJson()
+        public void SaveJson()
         {
             var newJson = JsonUtility.ToJson(spriteJSON);
-            System.IO.File.WriteAllText("./Assets/Scripts/sprites.json", newJson);
-        }
-        public void selectSprite(int spriteIndex)
-        {
-            path = spriteJSON.files[spriteIndex];
-            StartCoroutine(GetTexture());
+            File.WriteAllText("./Assets/Scripts/sprites.json", newJson);
         }
 
-        private string path;
-        
-        public void loadSprite()
+        public void SelectSprite(int spriteIndex)
+        {
+            var path = spriteJSON.files[spriteIndex];
+            StartCoroutine(GetTexture(path));
+        }
+
+        public void OpenSpriteFromLocal()
         {
             spriteJSON.files.Add(
                 EditorUtility.OpenFilePanel("Select sprite texture", "", "png"));
-            // StartCoroutine(GetTexture());
         }
-        UnityEngine.Sprite SpriteFromTexture2D(Texture2D texture) {
 
-            return UnityEngine.Sprite.Create(texture, new Rect(0.0f, 0.0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100.0f);
-        }
-        
-        IEnumerator GetTexture()
+        private UnityEngine.Sprite SpriteFromTexture2D(Texture2D texture)
         {
-            UnityWebRequest www = UnityWebRequestTexture.GetTexture("file:///"+path);
+            return UnityEngine.Sprite.Create(texture, new Rect(0.0f, 0.0f, texture.width, texture.height),
+                new Vector2(0.5f, 0.5f), 100.0f);
+        }
+
+        private IEnumerator GetTexture(string path)
+        {
+            var www = UnityWebRequestTexture.GetTexture("file:///" + path);
             yield return www.SendWebRequest();
             if (www.result == UnityWebRequest.Result.ConnectionError)
             {
@@ -62,10 +60,16 @@ namespace Sprite
             }
             else
             {
-                Texture2D webTexture = ((DownloadHandlerTexture)www.downloadHandler).texture as Texture2D;
-                UnityEngine.Sprite webSprite = SpriteFromTexture2D (webTexture);
+                var webTexture = ((DownloadHandlerTexture) www.downloadHandler).texture;
+                var webSprite = SpriteFromTexture2D(webTexture);
                 CanvasSettings.instance.selectedSprite = webSprite;
             }
+        }
+
+        [Serializable]
+        public class JSONDef
+        {
+            public List<string> files;
         }
     }
 }

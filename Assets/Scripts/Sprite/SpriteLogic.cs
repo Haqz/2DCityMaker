@@ -6,21 +6,16 @@ namespace Sprite
     {
         private void OnMouseDown()
         {
-            if (GlobalSettings.instance.drawingMode == GlobalSettings.DrawingModes.Deleting)
-            {
-                Destroy(gameObject);  
-            }
+            if (GlobalSettings.instance.drawingMode == GlobalSettings.DrawingModes.Deleting) Destroy(gameObject);
             if (GlobalSettings.instance.drawingMode == GlobalSettings.DrawingModes.Selecting)
-            {
                 CanvasSettings.instance.selectedGameObject = transform;
-            }
-            
         }
-        void OnMouseDrag()
+
+        private void OnMouseDrag()
         {
             if (GlobalSettings.instance.drawingMode == GlobalSettings.DrawingModes.Selecting)
             {
-                Vector3 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                var worldPosition = GlobalSettings.instance.mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 worldPosition.z = 0;
                 transform.position = worldPosition;
             }
