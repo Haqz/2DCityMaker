@@ -28,9 +28,8 @@ namespace Sprite
 
         public void selectSprite(int spriteIndex)
         {
-            Debug.Log(Resources.Load<UnityEngine.Sprite>(spriteJSON.files[spriteIndex]));
-            CanvasSettings.instance.selectedSprite =
-                Resources.Load<UnityEngine.Sprite>(spriteJSON.files[spriteIndex]);
+            path = spriteJSON.files[spriteIndex];
+            StartCoroutine(GetTexture());
         }
 
         private string path;
