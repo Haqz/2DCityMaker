@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Sprite
+namespace SpriteLogic
 {
     public class SpriteLogic : MonoBehaviour
     {

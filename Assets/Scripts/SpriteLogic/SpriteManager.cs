@@ -2,12 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using DigitalRuby.AdvancedPolygonCollider;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-namespace Sprite
+namespace SpriteLogic
 {
     public class SpriteManager : MonoBehaviour
     {
@@ -23,6 +24,12 @@ namespace Sprite
         {
             var text = File.ReadAllText(path);
             spriteJSON = JsonUtility.FromJson<JSONDef>(text);
+            foreach (var v in spriteJSON.files) drop.options.Add(new Dropdown.OptionData("New"));
+        }
+
+        public void UpdateSpritesList()
+        {
+            drop.options.Clear();
             foreach (var v in spriteJSON.files) drop.options.Add(new Dropdown.OptionData("New"));
         }
 
@@ -42,11 +49,13 @@ namespace Sprite
         {
             spriteJSON.files.Add(
                 EditorUtility.OpenFilePanel("Select sprite texture", "", "png"));
+            UpdateSpritesList();
+            SaveJson();
         }
 
-        private UnityEngine.Sprite SpriteFromTexture2D(Texture2D texture)
+        private Sprite SpriteFromTexture2D(Texture2D texture)
         {
-            return UnityEngine.Sprite.Create(texture, new Rect(0.0f, 0.0f, texture.width, texture.height),
+            return Sprite.Create(texture, new Rect(0.0f, 0.0f, texture.width, texture.height),
                 new Vector2(0.5f, 0.5f), 100.0f);
         }
 
@@ -63,6 +72,11 @@ namespace Sprite
                 var webTexture = ((DownloadHandlerTexture) www.downloadHandler).texture;
                 var webSprite = SpriteFromTexture2D(webTexture);
                 CanvasSettings.instance.selectedSprite = webSprite;
+                ;
+
+                var d_go = CanvasSettings.instance.drawingGameObject;
+                if (d_go.GetComponent<SpriteRenderer>().sprite)
+                    d_go.GetComponent<AdvancedPolygonCollider>().RecalculatePolygon();
             }
         }
 
