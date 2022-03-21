@@ -2,7 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using UnityEditor;
+using System.Runtime.Serialization.Formatters.Binary;
+using SFB;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -13,47 +14,37 @@ namespace SpriteLogic
     {
         public JSONDef spriteJSON;
         public Dropdown drop;
+        private string savePath = "";
 
-        private void Start()
+        public void LoadJson(string path)
         {
-            try
-            {
-                LoadJson();
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning(ex.Message);
-            }
+            //Format the object as Binary  
+            var formatter = new BinaryFormatter();
+
+            //Reading the file from the server  
+            var fs = File.Open(path, FileMode.Open);
+            var obj = formatter.Deserialize(fs);
+            spriteJSON = (JSONDef) obj;
+            UpdateSpritesList();
+            fs.Flush();
+            fs.Close();
+            fs.Dispose();
         }
 
-        public void LoadJson(string path = "./Scripts/sprites.json")
+        public void SaveJson(string path)
         {
-            var text = File.ReadAllText(Application.dataPath + path);
-            if (text != "")
-                try
-                {
-                    spriteJSON = JsonUtility.FromJson<JSONDef>(text);
-                    UpdateSpritesList();
-                }
-                catch (ArgumentException ex)
-                {
-                    throw new ArgumentException("Loaded file doesnt match class definition");
-                }
-            else
-                throw new Exception("Opened empty file");
-        }
+            Stream ms = File.OpenWrite(path);
+            Stream ms_bak = File.OpenWrite(path + ".bak");
 
-        public void SaveJson()
-        {
-            try
-            {
-                var newJson = JsonUtility.ToJson(spriteJSON);
-                File.WriteAllText(Application.dataPath + "./Scripts/sprites.json", newJson);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("There was issue with saving json file.");
-            }
+            //Format the object as Binary  
+            var formatter = new BinaryFormatter();
+
+            //It serialize the employee object  
+            formatter.Serialize(ms, spriteJSON);
+            formatter.Serialize(ms_bak, spriteJSON);
+            ms.Flush();
+            ms.Close();
+            ms.Dispose();
         }
 
         public void UpdateSpritesList()
@@ -72,19 +63,41 @@ namespace SpriteLogic
             StartCoroutine(GetTexture(path));
         }
 
-        public void OpenSpriteFromLocal()
+        public void OpenNewSpriteFromLocal()
         {
-            var file = EditorUtility.OpenFilePanel("Select sprite texture", "", "png");
-            if (spriteJSON.files.Contains(file))
+            var files = StandaloneFileBrowser.OpenFilePanel("Select sprite list", "", "png", true);
+            foreach (var file in files)
+                if (!spriteJSON.files.Contains(file))
+                    spriteJSON.files.Add(file);
+
+            SaveJson(savePath);
+            UpdateSpritesList();
+        }
+
+        public void LoadHaqzSpriteFileFromLocal()
+        {
+            var file = StandaloneFileBrowser.OpenFilePanel("Select sprite list", "", "hsf", false);
+            try
             {
-                UpdateSpritesList();
-                SaveJson();
+                LoadJson(file[0]);
+                savePath = file[0];
             }
-            else
+            catch (Exception ex)
             {
-                spriteJSON.files.Add(file);
-                UpdateSpritesList();
-                SaveJson();
+                Debug.LogWarning("Loading file failed " + ex.Message);
+            }
+        }
+
+        public void SaveHaqzSpriteFileToLocal()
+        {
+            var file = StandaloneFileBrowser.SaveFilePanel("Save sprite list", "", "SpriteList", "hsf");
+            try
+            {
+                SaveJson(file);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("Saving file failed " + ex.Message);
             }
         }
 
@@ -109,7 +122,7 @@ namespace SpriteLogic
                 CanvasSettings.instance.selectedSprite = webSprite;
             }
         }
-        
+
         [Serializable]
         public class JSONDef
         {
