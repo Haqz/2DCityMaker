@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using DigitalRuby.AdvancedPolygonCollider;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -17,26 +16,54 @@ namespace SpriteLogic
 
         private void Start()
         {
-            LoadJson();
+            try
+            {
+                LoadJson();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning(ex.Message);
+            }
         }
 
-        public void LoadJson(string path = "./Assets/Scripts/sprites.json")
+        public void LoadJson(string path = "./Scripts/sprites.json")
         {
-            var text = File.ReadAllText(path);
-            spriteJSON = JsonUtility.FromJson<JSONDef>(text);
-            foreach (var v in spriteJSON.files) drop.options.Add(new Dropdown.OptionData("New"));
+            var text = File.ReadAllText(Application.dataPath + path);
+            if (text != "")
+                try
+                {
+                    spriteJSON = JsonUtility.FromJson<JSONDef>(text);
+                    UpdateSpritesList();
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new ArgumentException("Loaded file doesnt match class definition");
+                }
+            else
+                throw new Exception("Opened empty file");
+        }
+
+        public void SaveJson()
+        {
+            try
+            {
+                var newJson = JsonUtility.ToJson(spriteJSON);
+                File.WriteAllText(Application.dataPath + "./Scripts/sprites.json", newJson);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("There was issue with saving json file.");
+            }
         }
 
         public void UpdateSpritesList()
         {
             drop.options.Clear();
-            foreach (var v in spriteJSON.files) drop.options.Add(new Dropdown.OptionData("New"));
-        }
-
-        public void SaveJson()
-        {
-            var newJson = JsonUtility.ToJson(spriteJSON);
-            File.WriteAllText("./Assets/Scripts/sprites.json", newJson);
+            foreach (var v in spriteJSON.files)
+            {
+                var fileName = Path.GetFileNameWithoutExtension(v);
+                drop.options.Add(new Dropdown.OptionData(fileName));
+            }
         }
 
         public void SelectSprite(int spriteIndex)
@@ -47,10 +74,18 @@ namespace SpriteLogic
 
         public void OpenSpriteFromLocal()
         {
-            spriteJSON.files.Add(
-                EditorUtility.OpenFilePanel("Select sprite texture", "", "png"));
-            UpdateSpritesList();
-            SaveJson();
+            var file = EditorUtility.OpenFilePanel("Select sprite texture", "", "png");
+            if (spriteJSON.files.Contains(file))
+            {
+                UpdateSpritesList();
+                SaveJson();
+            }
+            else
+            {
+                spriteJSON.files.Add(file);
+                UpdateSpritesList();
+                SaveJson();
+            }
         }
 
         private Sprite SpriteFromTexture2D(Texture2D texture)
@@ -72,14 +107,9 @@ namespace SpriteLogic
                 var webTexture = ((DownloadHandlerTexture) www.downloadHandler).texture;
                 var webSprite = SpriteFromTexture2D(webTexture);
                 CanvasSettings.instance.selectedSprite = webSprite;
-                ;
-
-                var d_go = CanvasSettings.instance.drawingGameObject;
-                if (d_go.GetComponent<SpriteRenderer>().sprite)
-                    d_go.GetComponent<AdvancedPolygonCollider>().RecalculatePolygon();
             }
         }
-
+        
         [Serializable]
         public class JSONDef
         {
