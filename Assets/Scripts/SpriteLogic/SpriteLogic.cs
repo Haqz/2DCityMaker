@@ -18,7 +18,11 @@ namespace SpriteLogic
             {
                 var worldPosition = GlobalSettings.instance.mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 worldPosition.z = 0;
-                transform.position = worldPosition;
+                var vec = GetComponent<SpriteRenderer>().bounds;
+                // Debug.Log(vec);
+                Debug.Log(vec);
+                transform.position = worldPosition - new Vector3(Mathf.Abs(worldPosition.x - vec.center.x),
+                    Mathf.Abs(worldPosition.x - vec.center.y), 0);
             }
         }
     }

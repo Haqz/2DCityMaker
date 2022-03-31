@@ -1023,6 +1023,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   drop: {fileID: 1164094840}
+  spriteButtonPrefab: {fileID: 2261773756750279017, guid: 9212d081d014d384abc6e64fac029c47, type: 3}
+  contentSprites: {fileID: 1052922679}
 --- !u!1 &584028851
 GameObject:
   m_ObjectHideFlags: 0
@@ -3355,11 +3357,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 927999598346414494, guid: 93c50ee786e14a64d9b8c002c64d6bd4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.416294
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 927999598346414494, guid: 93c50ee786e14a64d9b8c002c64d6bd4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.3236064
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 927999598346414494, guid: 93c50ee786e14a64d9b8c002c64d6bd4, type: 3}
       propertyPath: m_LocalPosition.z

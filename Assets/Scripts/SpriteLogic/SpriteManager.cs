@@ -13,6 +13,8 @@ namespace SpriteLogic
     {
         public SpriteDefinition spriteJSON;
         public Dropdown drop;
+        public GameObject spriteButtonPrefab;
+        public GameObject contentSprites;
         private string savePath = "";
 
         private void Start()
@@ -20,11 +22,43 @@ namespace SpriteLogic
             spriteJSON = new SpriteDefinition();
         }
 
+        private void CopyOldToNew(SpriteDefinition spriteDefinition)
+        {
+            foreach (var v in spriteDefinition.oldPaths)
+                if (spriteDefinition.newPaths.ContainsKey(v.Key) && spriteDefinition.newPaths.ContainsValue(v.Value))
+                {
+                    Debug.LogWarning("That file already exists");
+                }
+                else if (spriteDefinition.newPaths.ContainsKey(v.Key) &&
+                         !spriteDefinition.newPaths.ContainsValue(v.Value))
+                {
+                    Debug.LogWarning("That key already exists");
+                }
+                else if (!spriteDefinition.newPaths.ContainsKey(v.Key) &&
+                         !spriteDefinition.newPaths.ContainsValue(v.Value))
+                {
+                    if (!File.Exists(Application.persistentDataPath + "/" + Path.GetFileName(v.Value)))
+                        if (v.Value != null)
+                            File.Copy(v.Value, Application.persistentDataPath + "/" + Path.GetFileName(v.Value));
+                    spriteDefinition.newPaths.Add(v.Key,
+                        Application.persistentDataPath + "/" + Path.GetFileName(v.Value));
+                }
+                else if (!spriteDefinition.newPaths.ContainsKey(v.Key) &&
+                         spriteDefinition.newPaths.ContainsValue(v.Value))
+                {
+                    Debug.LogWarning("That value already exists");
+                }
+        }
+
         public void UpdateSpritesList()
         {
+            CopyOldToNew(spriteJSON);
             drop.options.Clear();
-            foreach (var v in spriteJSON.files)
+            contentSprites.transform.DestroyAllChildren();
+            foreach (var v in spriteJSON.newPaths)
             {
+                var go = Instantiate(spriteButtonPrefab, contentSprites.transform, true);
+                go.name = v.Key;
                 var fileName = Path.GetFileNameWithoutExtension(v.Value);
                 drop.options.Add(new Dropdown.OptionData(fileName));
             }
@@ -34,13 +68,13 @@ namespace SpriteLogic
 
         public void SelectSprite(string spriteIndex)
         {
-            var path = spriteJSON.files[spriteIndex];
+            var path = spriteJSON.newPaths[spriteIndex];
             StartCoroutine(SpriteHelper.GetTextureFromLocalPath(path));
         }
 
         public void SelectSprite(int spriteIndex)
         {
-            var path = spriteJSON.files.ElementAt(spriteIndex);
+            var path = spriteJSON.newPaths.ElementAt(spriteIndex);
             StartCoroutine(SpriteHelper.GetTextureFromLocalPath(path.Value));
         }
 
@@ -48,8 +82,11 @@ namespace SpriteLogic
         {
             var files = StandaloneFileBrowser.OpenFilePanel("Select sprite list", "", "png", true);
             foreach (var file in files)
-                if (!spriteJSON.files.ContainsValue(file))
-                    spriteJSON.files.Add(Path.GetFileNameWithoutExtension(file), file);
+            {
+                Debug.Log(file);
+                if (!spriteJSON.oldPaths.ContainsValue(file))
+                    spriteJSON.oldPaths.Add(Path.GetFileNameWithoutExtension(file), file);
+            }
 
             SavingLoading.SaveHSF(savePath, spriteJSON);
             UpdateSpritesList();
@@ -67,6 +104,8 @@ namespace SpriteLogic
             {
                 Debug.LogWarning("Loading file failed " + ex.Message);
             }
+
+            UpdateSpritesList();
         }
 
         public void SaveHaqzSpriteFileToLocal()
