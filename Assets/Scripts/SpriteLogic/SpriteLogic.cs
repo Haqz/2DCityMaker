@@ -21,8 +21,8 @@ namespace SpriteLogic
                 var vec = GetComponent<SpriteRenderer>().bounds;
                 // Debug.Log(vec);
                 Debug.Log(vec);
-                transform.position = worldPosition - new Vector3(Mathf.Abs(worldPosition.x - vec.center.x),
-                    Mathf.Abs(worldPosition.x - vec.center.y), 0);
+                transform.position = worldPosition /*- new Vector3(Mathf.Abs(worldPosition.x - vec.center.x),
+                    Mathf.Abs(worldPosition.x - vec.center.y), 0)*/;
             }
         }
     }
