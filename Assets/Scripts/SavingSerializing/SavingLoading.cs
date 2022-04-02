@@ -1,11 +1,12 @@
 ﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using SavingSerializing.Definitions;
 
 namespace SavingSerializing
 {
     public class SavingLoading
     {
-        public static SpriteDefinition LoadHSF(string path)
+        public static ProjectDefinition LoadHSF(string path)
         {
             //Format the object as Binary  
             var formatter = new BinaryFormatter();
@@ -17,10 +18,10 @@ namespace SavingSerializing
             fs.Close();
             fs.Dispose();
 
-            return (SpriteDefinition) obj;
+            return (ProjectDefinition) obj;
         }
 
-        public static void SaveHSF(string path, SpriteDefinition spriteDefinition)
+        public static void SaveHSF(string path, ProjectDefinition spriteDefinition)
         {
             Stream ms = File.OpenWrite(path);
             Stream ms_bak = File.OpenWrite(path + ".bak");

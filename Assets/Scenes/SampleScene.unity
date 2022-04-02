@@ -5513,7 +5513,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 556077786829042309, guid: 1f631063de08af0478769590b418b018, type: 3}
       propertyPath: m_Name
-      value: CanvasSettings
+      value: ProjectSettings
       objectReference: {fileID: 0}
     - target: {fileID: 6816234402185792095, guid: 1f631063de08af0478769590b418b018, type: 3}
       propertyPath: speed

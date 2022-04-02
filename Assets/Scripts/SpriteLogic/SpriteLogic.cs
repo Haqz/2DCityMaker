@@ -8,13 +8,14 @@ namespace SpriteLogic
         {
             if (GlobalSettings.instance.drawingMode == GlobalSettings.DrawingModes.Deleting) Destroy(gameObject);
             if (GlobalSettings.instance.drawingMode == GlobalSettings.DrawingModes.Selecting)
-                CanvasSettings.instance.selectedGameObject = transform;
+                ProjectSettings.instance.selectedGameObject = transform;
         }
 
         private void OnMouseDrag()
         {
-            if (GlobalSettings.instance.drawingMode == GlobalSettings.DrawingModes.Selecting &&
-                CanvasSettings.instance.selectedGameObject == transform)
+            if (ProjectSettings.instance.selectedGameObject != transform) return;
+            if (GlobalSettings.instance.drawingMode == GlobalSettings.DrawingModes.Selecting
+               )
             {
                 var worldPosition = GlobalSettings.instance.mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 worldPosition.z = 0;

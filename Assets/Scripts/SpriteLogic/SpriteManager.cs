@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Helpers;
 using SavingSerializing;
+using SavingSerializing.Definitions;
 using SFB;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,16 +12,10 @@ namespace SpriteLogic
 {
     public class SpriteManager : MonoBehaviour
     {
-        public SpriteDefinition spriteJSON;
         public Dropdown drop;
         public GameObject spriteButtonPrefab;
         public GameObject contentSprites;
         private string savePath = "";
-
-        private void Start()
-        {
-            spriteJSON = new SpriteDefinition();
-        }
 
         private void CopyOldToNew(SpriteDefinition spriteDefinition)
         {
@@ -52,10 +47,10 @@ namespace SpriteLogic
 
         public void UpdateSpritesList()
         {
-            CopyOldToNew(spriteJSON);
+            CopyOldToNew(ProjectSettings.instance.projectDefinition.sprites);
             drop.options.Clear();
             contentSprites.transform.DestroyAllChildren();
-            foreach (var v in spriteJSON.newPaths)
+            foreach (var v in ProjectSettings.instance.projectDefinition.sprites.newPaths)
             {
                 var go = Instantiate(spriteButtonPrefab, contentSprites.transform, true);
                 go.name = v.Key;
@@ -68,13 +63,13 @@ namespace SpriteLogic
 
         public void SelectSprite(string spriteIndex)
         {
-            var path = spriteJSON.newPaths[spriteIndex];
+            var path = ProjectSettings.instance.projectDefinition.sprites.newPaths[spriteIndex];
             StartCoroutine(SpriteHelper.GetTextureFromLocalPath(path));
         }
 
         public void SelectSprite(int spriteIndex)
         {
-            var path = spriteJSON.newPaths.ElementAt(spriteIndex);
+            var path = ProjectSettings.instance.projectDefinition.sprites.newPaths.ElementAt(spriteIndex);
             StartCoroutine(SpriteHelper.GetTextureFromLocalPath(path.Value));
         }
 
@@ -84,11 +79,12 @@ namespace SpriteLogic
             foreach (var file in files)
             {
                 Debug.Log(file);
-                if (!spriteJSON.oldPaths.ContainsValue(file))
-                    spriteJSON.oldPaths.Add(Path.GetFileNameWithoutExtension(file), file);
+                if (!ProjectSettings.instance.projectDefinition.sprites.oldPaths.ContainsValue(file))
+                    ProjectSettings.instance.projectDefinition.sprites.oldPaths.Add(
+                        Path.GetFileNameWithoutExtension(file), file);
             }
 
-            SavingLoading.SaveHSF(savePath, spriteJSON);
+            SavingLoading.SaveHSF(savePath, ProjectSettings.instance.projectDefinition);
             UpdateSpritesList();
         }
 
@@ -97,7 +93,7 @@ namespace SpriteLogic
             var file = StandaloneFileBrowser.OpenFilePanel("Select sprite list", "", "hsf", false);
             try
             {
-                spriteJSON = SavingLoading.LoadHSF(file[0]);
+                ProjectSettings.instance.projectDefinition = SavingLoading.LoadHSF(file[0]);
                 savePath = file[0];
             }
             catch (Exception ex)
@@ -114,7 +110,7 @@ namespace SpriteLogic
             try
             {
                 if (savePath == "") savePath = file;
-                SavingLoading.SaveHSF(file, spriteJSON);
+                SavingLoading.SaveHSF(file, ProjectSettings.instance.projectDefinition);
             }
             catch (Exception ex)
             {

@@ -18,7 +18,7 @@ namespace Helpers
             {
                 var webTexture = ((DownloadHandlerTexture) www.downloadHandler).texture;
                 var webSprite = SpriteFromTexture2D(webTexture);
-                CanvasSettings.instance.selectedSprite = webSprite;
+                ProjectSettings.instance.selectedSprite = webSprite;
             }
         }
 
